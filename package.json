@@ -6,6 +6,9 @@
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
+  "engines": {
+    "node": "24.21.0"
+  },
   "scripts": {
     "prebuild": "prisma generate",
     "build": "nest build",
