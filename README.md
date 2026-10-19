@@ -17,7 +17,7 @@ API for managing inventory, products, categories, and stock movements. StockFlow
 
 Before you begin, you must have the following tools installed:
 
-- Node.js 20.19 or later
+- Node.js 24
 - pnpm
 - Docker Desktop or Docker Engine with Docker Compose
 
