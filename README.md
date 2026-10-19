@@ -1,27 +1,27 @@
 # StockFlow API
 
-API para gestionar inventario, productos, categorías y movimientos de stock. StockFlow permite registrar entradas y salidas de productos y mantener actualizado el nivel disponible de cada artículo.
+API for managing inventory, products, categories, and stock movements. StockFlow allows you to record incoming and outgoing products and keep the available stock level of each item updated.
 
-## Stack tecnológico
+## Technology stack
 
 - Node.js
 - TypeScript
 - NestJS 11
 - Prisma ORM 7
 - PostgreSQL 17
-- Docker y Docker Compose
+- Docker and Docker Compose
 - pnpm
-- `@nestjs/config` y Joi para configuración y validación de variables de entorno
+- `@nestjs/config` and Joi for environment variable configuration and validation
 
-## Requisitos previos
+## Prerequisites
 
-Antes de comenzar, debes tener instalado:
+Before you begin, you must have the following tools installed:
 
-- Node.js 20.19 o superior
+- Node.js 20.19 or later
 - pnpm
-- Docker Desktop o Docker Engine con Docker Compose
+- Docker Desktop or Docker Engine with Docker Compose
 
-Puedes comprobar las versiones instaladas con:
+You can check the installed versions with:
 
 ```bash
 node --version
@@ -54,104 +54,104 @@ pnpm start:dev
 
 The application will be available at `http://localhost:3000`.
 
-## Configuración de variables de entorno
+## Environment variable configuration
 
-Copia el archivo de ejemplo para crear tu configuración local:
+Copy the example file to create your local configuration:
 
 ```bash
 cp .env.example .env
 ```
 
-Variables disponibles:
+Available variables:
 
-| Variable            | Descripción                                           | Valor de ejemplo                                                             |
-| ------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `POSTGRES_USER`     | Usuario de PostgreSQL                                 | `stockflow`                                                                  |
-| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL                              | `stockflow`                                                                  |
-| `POSTGRES_DB`       | Nombre de la base de datos                            | `stockflow_db`                                                               |
-| `POSTGRES_PORT`     | Puerto de PostgreSQL en la máquina local              | `5433`                                                                       |
-| `DATABASE_URL`      | URL utilizada por Prisma para conectarse a PostgreSQL | `postgresql://stockflow:stockflow@localhost:5433/stockflow_db?schema=public` |
-| `PORT`              | Puerto HTTP de la API                                 | `3000`                                                                       |
+| Variable            | Description                                 | Example value                                                                |
+| ------------------- | ------------------------------------------- | ---------------------------------------------------------------------------- |
+| `POSTGRES_USER`     | PostgreSQL user                             | `stockflow`                                                                  |
+| `POSTGRES_PASSWORD` | PostgreSQL password                         | `stockflow`                                                                  |
+| `POSTGRES_DB`       | Database name                               | `stockflow_db`                                                               |
+| `POSTGRES_PORT`     | PostgreSQL port on the local machine        | `5433`                                                                       |
+| `DATABASE_URL`      | URL used by Prisma to connect to PostgreSQL | `postgresql://stockflow:stockflow@localhost:5433/stockflow_db?schema=public` |
+| `PORT`              | HTTP port used by the API                   | `3000`                                                                       |
 
-`DATABASE_URL` es obligatoria y debe usar el esquema `postgres` o `postgresql`. La aplicación también valida que `PORT` sea un puerto válido.
+`DATABASE_URL` is required and must use the `postgres` or `postgresql` protocol. The application also checks that `PORT` is a valid port.
 
-## Instalación de dependencias
+## Dependency installation
 
-Instala las dependencias del proyecto:
+Install the project dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Configuración de PostgreSQL
+## PostgreSQL configuration
 
-Inicia PostgreSQL 17 con Docker Compose:
+Start PostgreSQL 17 with Docker Compose:
 
 ```bash
 docker compose up -d
 ```
 
-El puerto `5433` de la máquina local se conecta con el puerto `5432` del contenedor.
+Port `5433` on the local machine connects to port `5432` in the container.
 
-Comprueba el estado del servicio:
+Check the service status:
 
 ```bash
 docker compose ps
 ```
 
-Para consultar los registros de PostgreSQL:
+To view the PostgreSQL logs:
 
 ```bash
 docker compose logs -f postgres
 ```
 
-Para detener los servicios sin eliminar los datos:
+To stop the services without deleting the data:
 
 ```bash
 docker compose down
 ```
 
-## Migraciones de Prisma
+## Prisma migrations
 
-Para crear y aplicar una nueva migración durante el desarrollo:
+To create and apply a new migration during development:
 
 ```bash
-pnpm prisma:migrate --name nombre_de_la_migracion
+pnpm prisma:migrate --name migration_name
 ```
 
-Por ejemplo:
+For example:
 
 ```bash
 pnpm prisma:migrate --name init
 ```
 
-Después de cambiar el esquema o ejecutar una migración, genera Prisma Client:
+After changing the schema or running a migration, generate Prisma Client:
 
 ```bash
 pnpm prisma:generate
 ```
 
-Para aplicar migraciones existentes en un entorno de producción:
+To apply existing migrations in a production environment:
 
 ```bash
 pnpm exec prisma migrate deploy
 ```
 
-## Iniciar el servidor
+## Starting the server
 
-Inicia la API en modo desarrollo con recarga automática:
+Start the API in development mode with automatic reload:
 
 ```bash
 pnpm start:dev
 ```
 
-La API estará disponible en:
+The API will be available at:
 
 ```text
 http://localhost:3000
 ```
 
-Para compilar y ejecutar la versión de producción:
+To build and run the production version:
 
 ```bash
 pnpm build
