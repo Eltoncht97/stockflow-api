@@ -1,27 +1,27 @@
 # StockFlow API
 
-An API for managing inventory, products, categories, and stock movements. StockFlow records incoming and outgoing products and keeps the available stock level of each item up to date.
+API para gestionar inventario, productos, categorías y movimientos de stock. StockFlow permite registrar entradas y salidas de productos y mantener actualizado el nivel disponible de cada artículo.
 
-## Technology stack
+## Stack tecnológico
 
-- Node.js 24.21.0
+- Node.js
 - TypeScript
 - NestJS 11
 - Prisma ORM 7
 - PostgreSQL 17
-- Docker and Docker Compose
+- Docker y Docker Compose
 - pnpm
-- `@nestjs/config` and Joi for configuration and environment variable validation
+- `@nestjs/config` y Joi para configuración y validación de variables de entorno
 
-## Prerequisites
+## Requisitos previos
 
-Before you begin, install:
+Antes de comenzar, debes tener instalado:
 
-- Node.js 24.21.0
+- Node.js 20.19 o superior
 - pnpm
-- Docker Desktop or Docker Engine with Docker Compose
+- Docker Desktop o Docker Engine con Docker Compose
 
-You can check the installed versions with:
+Puedes comprobar las versiones instaladas con:
 
 ```bash
 node --version
@@ -30,110 +30,128 @@ docker --version
 docker compose version
 ```
 
-If you use NVM, select the project version with:
+## Clean project launch
+
+Use the following steps after cloning the project or when setting it up in a clean environment:
 
 ```bash
-nvm use
-```
+# 1. Configure environment variables
+cp .env.example .env
 
-## Install dependencies
-
-Install the project dependencies:
-
-```bash
+# 2. Install dependencies and generate Prisma Client
 pnpm install
+pnpm prisma:generate
+
+# 3. Start PostgreSQL
+docker compose up -d
+
+# 4. Apply existing migrations
+pnpm exec prisma migrate deploy
+
+# 5. Start the application
+pnpm start:dev
 ```
 
-## Configure environment variables
+The application will be available at `http://localhost:3000`.
 
-Copy the example file to create your local configuration:
+## Configuración de variables de entorno
+
+Copia el archivo de ejemplo para crear tu configuración local:
 
 ```bash
 cp .env.example .env
 ```
 
-Available variables:
+Variables disponibles:
 
-| Variable            | Description                                 | Example value                                                                |
-| ------------------- | ------------------------------------------- | ---------------------------------------------------------------------------- |
-| `POSTGRES_USER`     | PostgreSQL user                             | `stockflow`                                                                  |
-| `POSTGRES_PASSWORD` | PostgreSQL password                         | `stockflow`                                                                  |
-| `POSTGRES_DB`       | Database name                               | `stockflow_db`                                                               |
-| `POSTGRES_PORT`     | PostgreSQL port on the local machine        | `5433`                                                                       |
-| `DATABASE_URL`      | URL used by Prisma to connect to PostgreSQL | `postgresql://stockflow:stockflow@localhost:5433/stockflow_db?schema=public` |
-| `PORT`              | API HTTP port                               | `3000`                                                                       |
+| Variable            | Descripción                                           | Valor de ejemplo                                                             |
+| ------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `POSTGRES_USER`     | Usuario de PostgreSQL                                 | `stockflow`                                                                  |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL                              | `stockflow`                                                                  |
+| `POSTGRES_DB`       | Nombre de la base de datos                            | `stockflow_db`                                                               |
+| `POSTGRES_PORT`     | Puerto de PostgreSQL en la máquina local              | `5433`                                                                       |
+| `DATABASE_URL`      | URL utilizada por Prisma para conectarse a PostgreSQL | `postgresql://stockflow:stockflow@localhost:5433/stockflow_db?schema=public` |
+| `PORT`              | Puerto HTTP de la API                                 | `3000`                                                                       |
 
-`DATABASE_URL` is required and must use the `postgres` or `postgresql` scheme. The application also validates that `PORT` is a valid port.
+`DATABASE_URL` es obligatoria y debe usar el esquema `postgres` o `postgresql`. La aplicación también valida que `PORT` sea un puerto válido.
 
-## Configure PostgreSQL
+## Instalación de dependencias
 
-Start PostgreSQL 17 with Docker Compose:
+Instala las dependencias del proyecto:
+
+```bash
+pnpm install
+```
+
+## Configuración de PostgreSQL
+
+Inicia PostgreSQL 17 con Docker Compose:
 
 ```bash
 docker compose up -d
 ```
 
-Local port `5433` maps to port `5432` inside the container.
+El puerto `5433` de la máquina local se conecta con el puerto `5432` del contenedor.
 
-Check the service status:
+Comprueba el estado del servicio:
 
 ```bash
 docker compose ps
 ```
 
-View the PostgreSQL logs:
+Para consultar los registros de PostgreSQL:
 
 ```bash
 docker compose logs -f postgres
 ```
 
-Stop the services without deleting their data:
+Para detener los servicios sin eliminar los datos:
 
 ```bash
 docker compose down
 ```
 
-## Prisma migrations
+## Migraciones de Prisma
 
-Create and apply a new migration during development:
+Para crear y aplicar una nueva migración durante el desarrollo:
 
 ```bash
-pnpm prisma:migrate --name migration_name
+pnpm prisma:migrate --name nombre_de_la_migracion
 ```
 
-For example:
+Por ejemplo:
 
 ```bash
 pnpm prisma:migrate --name init
 ```
 
-After changing the schema or running a migration, generate Prisma Client:
+Después de cambiar el esquema o ejecutar una migración, genera Prisma Client:
 
 ```bash
 pnpm prisma:generate
 ```
 
-Apply existing migrations in production:
+Para aplicar migraciones existentes en un entorno de producción:
 
 ```bash
 pnpm exec prisma migrate deploy
 ```
 
-## Start the server
+## Iniciar el servidor
 
-Start the API in development mode with automatic reload:
+Inicia la API en modo desarrollo con recarga automática:
 
 ```bash
 pnpm start:dev
 ```
 
-The API will be available at:
+La API estará disponible en:
 
 ```text
 http://localhost:3000
 ```
 
-Build and run the production version:
+Para compilar y ejecutar la versión de producción:
 
 ```bash
 pnpm build
