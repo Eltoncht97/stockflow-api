@@ -9,7 +9,9 @@
 * 🟢 You can import this file directly.
 */
 
+export const MovementType = {
+  IN: 'IN',
+  OUT: 'OUT'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type MovementType = (typeof MovementType)[keyof typeof MovementType]
