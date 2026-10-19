@@ -18,26 +18,25 @@ ALTER TABLE "products" DROP CONSTRAINT "products_category_id_fkey";
 ALTER TABLE "stock_movements" DROP CONSTRAINT "stock_movements_product_id_fkey";
 
 -- AlterTable
-ALTER TABLE "categories" DROP CONSTRAINT "categories_pkey",
-DROP COLUMN "id",
-ADD COLUMN     "id" UUID NOT NULL,
-ADD CONSTRAINT "categories_pkey" PRIMARY KEY ("id");
+ALTER TABLE "categories"
+ALTER COLUMN "id" TYPE UUID
+USING "id"::uuid;
 
 -- AlterTable
-ALTER TABLE "products" DROP CONSTRAINT "products_pkey",
-DROP COLUMN "id",
-ADD COLUMN     "id" UUID NOT NULL,
-DROP COLUMN "category_id",
-ADD COLUMN     "category_id" UUID NOT NULL,
-ADD CONSTRAINT "products_pkey" PRIMARY KEY ("id");
+ALTER TABLE "products"
+ALTER COLUMN "id" TYPE UUID
+USING "id"::uuid;
+ALTER TABLE "products"
+ALTER COLUMN "category_id" TYPE UUID
+USING "category_id"::uuid;
 
 -- AlterTable
-ALTER TABLE "stock_movements" DROP CONSTRAINT "stock_movements_pkey",
-DROP COLUMN "id",
-ADD COLUMN     "id" UUID NOT NULL,
-DROP COLUMN "product_id",
-ADD COLUMN     "product_id" UUID NOT NULL,
-ADD CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id");
+ALTER TABLE "stock_movements"
+ALTER COLUMN "id" TYPE UUID
+USING "id"::uuid;
+ALTER TABLE "stock_movements"
+ALTER COLUMN "product_id" TYPE UUID
+USING "product_id"::uuid;
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
