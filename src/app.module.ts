@@ -4,6 +4,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { validateEnvironment } from './config/environment.validation.js';
+import { ProductsModule } from './products/products.module.js';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { validateEnvironment } from './config/environment.validation.js';
       validate: validateEnvironment,
     }),
     CategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
