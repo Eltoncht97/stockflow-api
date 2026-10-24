@@ -5,6 +5,7 @@ import { AppService } from './app.service.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { validateEnvironment } from './config/environment.validation.js';
 import { ProductsModule } from './products/products.module.js';
+import { StockMovementsModule } from './stock-movements/stock-movements.module.js';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ProductsModule } from './products/products.module.js';
     }),
     CategoriesModule,
     ProductsModule,
+    StockMovementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

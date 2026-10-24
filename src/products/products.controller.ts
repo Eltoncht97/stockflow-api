@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import type { StockMovement } from '../generated/prisma/client.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { ProductsService } from './products.service.js';
@@ -20,6 +21,13 @@ export class ProductsController {
   @Get()
   findAll(): Promise<ProductResponse[]> {
     return this.productsService.findAll();
+  }
+
+  @Get(':id/stock-movements')
+  findStockMovements(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<StockMovement[]> {
+    return this.productsService.findStockMovements(id);
   }
 
   @Get(':id')
