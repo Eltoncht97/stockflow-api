@@ -14,5 +14,7 @@
   },
   "moduleNameMapper": {
     "^(\\.{1,2}/.*)\\.js$": "$1"
-  }
+  },
+  "setupFiles": ["<rootDir>/setup-test-env.ts"],
+  "maxWorkers": 1
 }

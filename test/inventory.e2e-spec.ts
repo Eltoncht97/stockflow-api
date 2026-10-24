@@ -5,6 +5,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { resetTestDatabase } from './helpers/test-database.js';
 
 type InventoryStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
 
@@ -33,7 +34,6 @@ describe('InventoryController (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let categoryId: string;
-  let baselineSummary: InventorySummaryResponseBody;
   const productIds: string[] = [];
   const sameNameProductIds: string[] = [];
   const testPrefix = `Inventory ${randomUUID()}`;
@@ -55,11 +55,12 @@ describe('InventoryController (e2e)', () => {
 
     await app.init();
     prisma = app.get(PrismaService);
+  });
 
-    const baselineResponse = await request(app.getHttpServer())
-      .get('/inventory/summary')
-      .expect(200);
-    baselineSummary = baselineResponse.body as InventorySummaryResponseBody;
+  beforeEach(async () => {
+    await resetTestDatabase(prisma);
+    productIds.length = 0;
+    sameNameProductIds.length = 0;
 
     const category = await prisma.category.create({
       data: { name: `Category ${randomUUID()}` },
@@ -145,8 +146,7 @@ describe('InventoryController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await prisma.product.deleteMany({ where: { id: { in: productIds } } });
-    await prisma.category.delete({ where: { id: categoryId } });
+    await resetTestDatabase(prisma);
     await app.close();
   });
 
@@ -218,7 +218,8 @@ describe('InventoryController (e2e)', () => {
     [{ search: '   ' }, 'blank search'],
     [{ search: 'a'.repeat(101) }, 'search longer than 100 characters'],
     [{ unknown: 'value' }, 'unknown query parameter'],
-  ])('returns 400 for %s (%s)', async (query) => {
+  ])('returns 400 for %s (%s)', async (query, description) => {
+    expect(description).toBeTruthy();
     await request(app.getHttpServer())
       .get('/inventory')
       .query(query)
@@ -253,14 +254,53 @@ describe('InventoryController (e2e)', () => {
     const body = response.body as InventorySummaryResponseBody;
 
     expect(body).toEqual({
-      totalProducts: baselineSummary.totalProducts + 6,
-      totalUnits: baselineSummary.totalUnits + 16,
-      inStockProducts: baselineSummary.inStockProducts + 3,
-      lowStockProducts: baselineSummary.lowStockProducts + 2,
-      outOfStockProducts: baselineSummary.outOfStockProducts + 1,
+      totalProducts: 6,
+      totalUnits: 16,
+      inStockProducts: 3,
+      lowStockProducts: 2,
+      outOfStockProducts: 1,
     });
     expect(
       body.inStockProducts + body.lowStockProducts + body.outOfStockProducts,
     ).toBe(body.totalProducts);
+  });
+
+  it('does not change products or movements when inventory is read', async () => {
+    const productsBefore = await prisma.product.findMany({
+      orderBy: { id: 'asc' },
+    });
+    const movementCountBefore = await prisma.stockMovement.count();
+
+    await request(app.getHttpServer()).get('/inventory').expect(200);
+    await request(app.getHttpServer()).get('/inventory/low-stock').expect(200);
+    await request(app.getHttpServer()).get('/inventory/summary').expect(200);
+
+    const productsAfter = await prisma.product.findMany({
+      orderBy: { id: 'asc' },
+    });
+    const movementCountAfter = await prisma.stockMovement.count();
+
+    expect(productsAfter).toEqual(productsBefore);
+    expect(movementCountAfter).toBe(movementCountBefore);
+  });
+
+  it('returns empty results when inventory has no products', async () => {
+    await resetTestDatabase(prisma);
+
+    await request(app.getHttpServer()).get('/inventory').expect(200).expect([]);
+    await request(app.getHttpServer())
+      .get('/inventory/low-stock')
+      .expect(200)
+      .expect([]);
+    await request(app.getHttpServer())
+      .get('/inventory/summary')
+      .expect(200)
+      .expect({
+        totalProducts: 0,
+        totalUnits: 0,
+        inStockProducts: 0,
+        lowStockProducts: 0,
+        outOfStockProducts: 0,
+      });
   });
 });
