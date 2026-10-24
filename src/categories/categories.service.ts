@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isPrismaError } from '../common/helpers/is-prisma-error.helper.js';
 import type { Category } from '../generated/prisma/client.js';
-import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateCategoryDto } from './dto/create-category.dto.js';
 import type { UpdateCategoryDto } from './dto/update-category.dto.js';
@@ -39,7 +39,7 @@ export class CategoriesService {
         data: createCategoryDto,
       });
     } catch (error: unknown) {
-      if (this.isPrismaError(error, 'P2002')) {
+      if (isPrismaError(error, 'P2002')) {
         throw new ConflictException('A category with this name already exists');
       }
 
@@ -57,11 +57,11 @@ export class CategoriesService {
         data: updateCategoryDto,
       });
     } catch (error: unknown) {
-      if (this.isPrismaError(error, 'P2002')) {
+      if (isPrismaError(error, 'P2002')) {
         throw new ConflictException('A category with this name already exists');
       }
 
-      if (this.isPrismaError(error, 'P2025')) {
+      if (isPrismaError(error, 'P2025')) {
         throw new NotFoundException('Category not found');
       }
 
@@ -75,24 +75,17 @@ export class CategoriesService {
         where: { id },
       });
     } catch (error: unknown) {
-      if (this.isPrismaError(error, 'P2003')) {
+      if (isPrismaError(error, 'P2003')) {
         throw new ConflictException(
           'Category cannot be deleted because it has associated products',
         );
       }
 
-      if (this.isPrismaError(error, 'P2025')) {
+      if (isPrismaError(error, 'P2025')) {
         throw new NotFoundException('Category not found');
       }
 
       throw error;
     }
-  }
-
-  private isPrismaError(error: unknown, code: string): boolean {
-    return (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === code
-    );
   }
 }
