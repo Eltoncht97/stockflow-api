@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isPrismaError } from '../common/helpers/is-prisma-error.helper.js';
+import type { StockMovement } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { productSelect } from './constants/product-select.constant.js';
 import type { CreateProductDto } from './dto/create-product.dto.js';
@@ -40,6 +41,23 @@ export class ProductsService {
     }
 
     return this.toResponse(product);
+  }
+
+  async findStockMovements(id: string): Promise<StockMovement[]> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: {
+        stockMovements: {
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return product.stockMovements;
   }
 
   async create(createProductDto: CreateProductDto): Promise<ProductResponse> {
