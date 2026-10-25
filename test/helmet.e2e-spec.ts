@@ -2,7 +2,7 @@ import { Controller, Get, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { setupApplication } from '../src/app.setup.js';
+import { setupApp } from '../src/app.setup.js';
 
 @Controller('helmet-test')
 class HelmetTestController {
@@ -21,7 +21,7 @@ describe('Helmet (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    setupApplication(app);
+    setupApp(app, { corsOrigins: [] });
     await app.init();
   });
 

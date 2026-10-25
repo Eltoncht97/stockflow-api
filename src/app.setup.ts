@@ -1,6 +1,18 @@
-import type { INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import helmet from 'helmet';
 
-export function setupApplication(app: INestApplication): void {
+export type AppSetupOptions = {
+  corsOrigins: string[];
+};
+
+export function setupApp(
+  app: INestApplication,
+  options: AppSetupOptions,
+): void {
   app.use(helmet());
+
+  app.enableCors({
+    origin: options.corsOrigins,
+    credentials: false,
+  });
 }
