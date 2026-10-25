@@ -5,6 +5,7 @@ export type EnvironmentVariables = {
   PORT: number;
   THROTTLE_TTL: number;
   THROTTLE_LIMIT: number;
+  CORS_ORIGINS: string;
 };
 
 const environmentSchema = Joi.object<EnvironmentVariables>({
@@ -13,8 +14,8 @@ const environmentSchema = Joi.object<EnvironmentVariables>({
     .required(),
   PORT: Joi.number().port().default(3000),
   THROTTLE_TTL: Joi.number().integer().positive().default(60_000),
-
   THROTTLE_LIMIT: Joi.number().integer().positive().default(60),
+  CORS_ORIGINS: Joi.string().trim().required(),
 }).unknown(true);
 
 export function validateEnvironment(
