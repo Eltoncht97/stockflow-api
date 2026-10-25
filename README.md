@@ -60,3 +60,35 @@ To build and run the production version:
 pnpm build
 pnpm start:prod
 ```
+
+## Automated tests
+
+Unit tests do not require PostgreSQL:
+
+```bash
+pnpm test --runInBand
+pnpm test:cov --runInBand
+```
+
+The E2E tests use a separate PostgreSQL database. The safety check refuses to
+run them unless the database name is exactly `stockflow_test`.
+The migration command reloads `.env.test.local` and applies the same check, so
+an exported `DATABASE_URL` cannot redirect migrations to another database.
+
+Create the local test environment and start the isolated database:
+
+```bash
+cp .env.test.example .env.test.local
+pnpm test:e2e:db:up
+pnpm test:e2e:migrate
+pnpm test:e2e
+```
+
+The test container uses port `5434` by default and stores its data in temporary
+memory. It does not use the development database volume.
+
+Stop the test database when it is no longer needed:
+
+```bash
+pnpm test:e2e:db:down
+```

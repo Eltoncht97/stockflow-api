@@ -23,6 +23,9 @@
     "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:debug": "node --experimental-vm-modules --inspect-brk node_modules/jest/bin/jest.js --runInBand",
     "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
+    "test:e2e:db:up": "docker compose -p stockflow-api-test --env-file .env.test.local -f docker-compose.test.yml up -d --wait",
+    "test:e2e:db:down": "docker compose -p stockflow-api-test --env-file .env.test.local -f docker-compose.test.yml down",
+    "test:e2e:migrate": "node test/scripts/run-test-migrations.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -92,9 +95,21 @@
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.ts",
+      "!**/*.spec.ts",
+      "!generated/**",
+      "!**/*.module.ts",
+      "!**/*.type.ts",
+      "!prisma/**",
+      "!main.ts"
     ],
     "coverageDirectory": "../coverage",
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "lines": 80
+      }
+    },
     "testEnvironment": "node"
   }
 }

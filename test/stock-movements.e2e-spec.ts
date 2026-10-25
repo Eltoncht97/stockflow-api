@@ -5,6 +5,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { resetTestDatabase } from './helpers/test-database.js';
 
 const POSTGRES_INT_MAX = 2_147_483_647;
 
@@ -20,8 +21,6 @@ interface StockMovementResponseBody {
 describe('StockMovementsController (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
-  const testCategoryIds: string[] = [];
-  const testProductIds: string[] = [];
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -41,16 +40,12 @@ describe('StockMovementsController (e2e)', () => {
     prisma = app.get(PrismaService);
   });
 
+  beforeEach(async () => {
+    await resetTestDatabase(prisma);
+  });
+
   afterAll(async () => {
-    await prisma.stockMovement.deleteMany({
-      where: { productId: { in: testProductIds } },
-    });
-    await prisma.product.deleteMany({
-      where: { id: { in: testProductIds } },
-    });
-    await prisma.category.deleteMany({
-      where: { id: { in: testCategoryIds } },
-    });
+    await resetTestDatabase(prisma);
     await app.close();
   });
 
@@ -63,8 +58,6 @@ describe('StockMovementsController (e2e)', () => {
         name: `Category ${randomUUID()}`,
       },
     });
-    testCategoryIds.push(category.id);
-
     const product = await prisma.product.create({
       data: {
         categoryId: category.id,
@@ -76,8 +69,6 @@ describe('StockMovementsController (e2e)', () => {
       },
       select: { id: true },
     });
-    testProductIds.push(product.id);
-
     return product;
   };
 
@@ -299,6 +290,57 @@ describe('StockMovementsController (e2e)', () => {
 
     expect(updatedProduct.stock).toBe(3);
     expect(movementCount).toBe(1);
+  });
+
+  it('rolls back the stock update when movement creation fails', async () => {
+    const product = await createProduct(5);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE OR REPLACE FUNCTION reject_test_stock_movement()
+      RETURNS trigger AS $$
+      BEGIN
+        IF NEW.reason = 'FORCE_ROLLBACK' THEN
+          RAISE EXCEPTION 'Forced test failure';
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE TRIGGER reject_test_stock_movement_trigger
+      BEFORE INSERT ON stock_movements
+      FOR EACH ROW EXECUTE FUNCTION reject_test_stock_movement();
+    `);
+
+    try {
+      await request(app.getHttpServer())
+        .post('/stock-movements')
+        .send({
+          productId: product.id,
+          type: 'IN',
+          quantity: 4,
+          reason: 'FORCE_ROLLBACK',
+        })
+        .expect(500);
+
+      const unchangedProduct = await prisma.product.findUniqueOrThrow({
+        where: { id: product.id },
+        select: { stock: true },
+      });
+      const movementCount = await prisma.stockMovement.count({
+        where: { productId: product.id },
+      });
+
+      expect(unchangedProduct.stock).toBe(5);
+      expect(movementCount).toBe(0);
+    } finally {
+      await prisma.$executeRawUnsafe(
+        'DROP TRIGGER IF EXISTS reject_test_stock_movement_trigger ON stock_movements;',
+      );
+      await prisma.$executeRawUnsafe(
+        'DROP FUNCTION IF EXISTS reject_test_stock_movement();',
+      );
+    }
   });
 
   it('returns inactive product movements in stable descending order', async () => {
