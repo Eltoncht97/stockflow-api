@@ -3,6 +3,8 @@ import Joi from 'joi';
 export type EnvironmentVariables = {
   DATABASE_URL: string;
   PORT: number;
+  THROTTLE_TTL: number;
+  THROTTLE_LIMIT: number;
 };
 
 const environmentSchema = Joi.object<EnvironmentVariables>({
@@ -10,6 +12,9 @@ const environmentSchema = Joi.object<EnvironmentVariables>({
     .uri({ scheme: ['postgres', 'postgresql'] })
     .required(),
   PORT: Joi.number().port().default(3000),
+  THROTTLE_TTL: Joi.number().integer().positive().default(60_000),
+
+  THROTTLE_LIMIT: Joi.number().integer().positive().default(60),
 }).unknown(true);
 
 export function validateEnvironment(
