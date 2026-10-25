@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
 export type EnvironmentVariables = {
+  NODE_ENV: 'development' | 'test' | 'production';
   DATABASE_URL: string;
   PORT: number;
   THROTTLE_TTL: number;
@@ -16,6 +17,9 @@ const environmentSchema = Joi.object<EnvironmentVariables>({
   THROTTLE_TTL: Joi.number().integer().positive().default(60_000),
   THROTTLE_LIMIT: Joi.number().integer().positive().default(60),
   CORS_ORIGINS: Joi.string().trim().required(),
+  NODE_ENV: Joi.string()
+    .valid('development', 'test', 'production')
+    .default('development'),
 }).unknown(true);
 
 export function validateEnvironment(
