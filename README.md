@@ -72,6 +72,8 @@ pnpm test:cov --runInBand
 
 The E2E tests use a separate PostgreSQL database. The safety check refuses to
 run them unless the database name is exactly `stockflow_test`.
+The migration command reloads `.env.test.local` and applies the same check, so
+an exported `DATABASE_URL` cannot redirect migrations to another database.
 
 Create the local test environment and start the isolated database:
 
